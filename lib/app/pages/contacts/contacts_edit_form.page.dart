@@ -1,17 +1,53 @@
-import 'package:app_contatos_1/app/pages/contacts/contacts_form.controller.dart';
+import 'package:app_contatos_1/app/controller/contact.page.controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-class EditContactPage extends StatelessWidget {
+class EditContactPage extends StatefulWidget {
 
-  var controller = Modular.get<ContactFormController>();
+  @override
+  _EditContactPageState createState() => _EditContactPageState();
+}
+
+class _EditContactPageState extends State<EditContactPage> {
+  var _controllerPage = Modular.get<ContactPageController>();
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerPage.getContactImagePath();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Editar Contatos"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), 
+          onPressed: (){
+            Modular.to.showDialog(
+              builder: (context){
+                return AlertDialog(
+                  title: Text("Descartar alterações?"),
+                  content: Text("Se sair as alterações serão descartadas"),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text("Cancelar"), 
+                      onPressed: Modular.to.pop,
+                    ),
+                    FlatButton(
+                      child: Text("Sair"), 
+                      onPressed: () {
+                        Modular.to.pop();
+                        Modular.to.pushReplacementNamed("/");
+                      }
+                    ),
+                  ],
+                );
+              }
+            );
+          }),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -19,18 +55,20 @@ class EditContactPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
-                key: controller.formKey,
                 children: <Widget>[
                   GestureDetector(
                     child: Observer(
                       builder: (_){ 
                         return CircleAvatar(
+                          backgroundColor: Colors.white,
                           radius: 80,
-                          backgroundImage: controller.store.image != null ? FileImage(controller.store.image) : null,
+                          backgroundImage: _controllerPage.imagePath != null ? 
+                            AssetImage(_controllerPage.imagePath) : 
+                              AssetImage('images/person.png')
                         );
                       }
                     ),
-                    onTap: controller.store.setImage,
+                    onTap: _controllerPage.setImage,
                   ),
                   TextFormField(
                     decoration: InputDecoration(
@@ -38,7 +76,7 @@ class EditContactPage extends StatelessWidget {
                       labelText: 'Nome'
                     ),
                     keyboardType: TextInputType.text,
-                    controller: controller.nameController,
+                    controller: _controllerPage.nameController,
                   ),
                   TextFormField(
                     decoration: InputDecoration(
@@ -46,7 +84,7 @@ class EditContactPage extends StatelessWidget {
                       labelText: 'Email'
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    controller: controller.emailController, 
+                    controller: _controllerPage.emailController, 
                   ),
                   TextFormField(
                     decoration: InputDecoration(
@@ -54,7 +92,7 @@ class EditContactPage extends StatelessWidget {
                       labelText: 'Numero'
                     ),
                     keyboardType: TextInputType.number,
-                    controller: controller.numberController,
+                    controller: _controllerPage.numberController,
                   ),
                 ],
               ),
@@ -65,11 +103,10 @@ class EditContactPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.save),
         onPressed: (){
-          controller.editContact();
+          _controllerPage.upadateContact();
           Modular.to.pop();
         },
       ),
     );
   }
-  
 }

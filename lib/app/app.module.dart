@@ -1,18 +1,19 @@
 
 import 'package:app_contatos_1/app/app.widget.dart';
+import 'package:app_contatos_1/app/controller/contact.page.controller.dart';
 import 'package:app_contatos_1/app/pages/contacts/contacts_add_form.page.dart';
 import 'package:app_contatos_1/app/pages/contacts/contacts_edit_form.page.dart';
-import 'package:app_contatos_1/app/pages/contacts/contacts_list.store.dart';
 import 'package:app_contatos_1/app/pages/home/home.page.dart';
+import 'package:app_contatos_1/app/repository/sqflite.repository.dart';
+import 'package:app_contatos_1/app/repository/sqflite_interface.repository.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:app_contatos_1/app/pages/contacts/contacts_form.controller.dart';
 
 class AppModule extends MainModule{
   @override
   List<Bind> get binds => [
-    Bind((i) => ContactFormController(i.get())),
-    Bind((i) => ContactStore()),
+    Bind((i) => ContactPageController(i.get())),
+    Bind<IRepository>((i) => Repository())
   ];
 
   @override

@@ -1,14 +1,24 @@
-import 'package:app_contatos_1/app/pages/contacts/contacts_form.controller.dart';
-import 'package:app_contatos_1/app/pages/contacts/contacts_list.store.dart';
+import 'package:app_contatos_1/app/controller/contact.page.controller.dart';
+import 'package:app_contatos_1/app/pages/home/customModalBottomSheet.home.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
 
-  var store = Modular.get<ContactStore>();
-  var controller = Modular.get<ContactFormController>();
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  
+  var _controllerPage = Modular.get<ContactPageController>();
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerPage.getAllContacts();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +28,8 @@ class HomePage extends StatelessWidget {
       ),
       body: Observer(
         builder: (_){
-          return ListView.builder(
-          itemCount: store.contacts.length,
+          return _controllerPage.contacts.isNotEmpty ? ListView.builder(
+          itemCount: _controllerPage.contacts.length,
           itemBuilder: (context, index){
             return GestureDetector(
               child: Card(
@@ -28,25 +38,26 @@ class HomePage extends StatelessWidget {
                   child: Row(
                     children: <Widget>[
                       CircleAvatar(
+                        backgroundColor: Colors.white,
                         radius: 50,
-                        backgroundImage: store.contacts[index].image != null ? 
-                          FileImage(store.contacts[index].image) : null,
+                        backgroundImage: _controllerPage.contacts[index].imagePath != null ? 
+                          AssetImage(_controllerPage.contacts[index].imagePath) : null,
                       ),
                       Container(
                         margin: EdgeInsets.only(left: 15),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(store.contacts[index].name,
+                            Text(_controllerPage.contacts[index].name,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold
                               ),
                             ),
                             SizedBox(height: 5),
-                            Text(store.contacts[index].email),
+                            Text(_controllerPage.contacts[index].email),
                             SizedBox(height: 5),
-                            Text(store.contacts[index].number),
+                            Text(_controllerPage.contacts[index].number),
                           ],
                         ),
                       ) 
@@ -55,53 +66,25 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: (){
-                store.setListIndex(index);
-                _bootoomSheet(context);
+                _controllerPage.setElementId(_controllerPage.contacts[index].id);
+                showModalBottomSheet(
+                  context: context,
+                  builder: (_) {
+                    return CustomModalBottomSheet();
+                  });
               },
             );
           } 
-          );
+          ) : Container();
         }       
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: (){
-          controller.clearFields();
+          _controllerPage.clearFields();
           Modular.to.pushNamed('/contact_add_form');
         }
       ),
     );
   }
-  
-  _bootoomSheet(BuildContext context){
-    return showBottomSheet(
-      context: context,
-      builder: (_) {
-        return Container(
-          height: 200,
-          child: Column(children: <Widget>[
-            ListTile(
-              title: Text('Editar'),
-              onTap: () {
-                controller.setFields();
-                Modular.to.pushNamed('/contact_edit_form');
-              },
-             ),
-            ListTile(
-              title: Text('remover'),
-              onTap: () {
-                store.remove();
-              },
-            ),
-            ListTile(
-              title: Text('Ligar'),
-              onTap: () {
-                launch("tel:${store.contacts[store.listIndex].number}");
-              },
-            )
-          ]),
-        );
-      });
-  }
-
 }

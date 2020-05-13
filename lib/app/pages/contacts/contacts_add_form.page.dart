@@ -1,13 +1,16 @@
-import 'package:app_contatos_1/app/pages/contacts/contacts_form.controller.dart';
-import 'package:app_contatos_1/app/pages/contacts/contacts_list.store.dart';
+import 'package:app_contatos_1/app/controller/contact.page.controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-class AddContactForm extends StatelessWidget {
+class AddContactForm extends StatefulWidget {
+  @override
+  _AddContactFormState createState() => _AddContactFormState();
+}
 
-  var controller = Modular.get<ContactFormController>();
-  var store = Modular.get<ContactStore>();
+class _AddContactFormState extends State<AddContactForm> {
+
+  var _controllerPage = Modular.get<ContactPageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -18,29 +21,33 @@ class AddContactForm extends StatelessWidget {
       body: SingleChildScrollView(
         child: Container(
           child: Form(
+            key: _controllerPage.formKey,
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
-                key: controller.formKey,
                 children: <Widget>[
                   GestureDetector(
                     child: Observer(
                       builder: (_){
                         return CircleAvatar(
+                          backgroundColor: Colors.white,
                           radius: 80,
-                          backgroundImage: store.image != null ? FileImage(store.image) : null,
+                          backgroundImage: _controllerPage.imagePath != null ? 
+                            AssetImage(_controllerPage.imagePath) : 
+                              AssetImage('images/person.png')
                         );
                       },
                     ),
-                    onTap: store.setImage,
+                    onTap: _controllerPage.setImage,
                   ),
                   TextFormField(
+                    keyboardType: TextInputType.text,
                     decoration: InputDecoration(
                       hintText: 'Nome',
                       labelText: 'Nome'
                     ),
-                    keyboardType: TextInputType.text,
-                    controller: controller.nameController,
+                    validator: _controllerPage.validatorField,
+                    onSaved: _controllerPage.saveFieldName,
                   ),
                   TextFormField(
                     decoration: InputDecoration(
@@ -48,7 +55,6 @@ class AddContactForm extends StatelessWidget {
                       labelText: 'Email'
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    controller: controller.emailController, 
                   ),
                   TextFormField(
                     decoration: InputDecoration(
@@ -56,7 +62,8 @@ class AddContactForm extends StatelessWidget {
                       labelText: 'Numero'
                     ),
                     keyboardType: TextInputType.number,
-                    controller: controller.numberController,
+                    validator: _controllerPage.validatorField,
+                    onSaved: _controllerPage.saveFieldNumber,
                   ),
                 ],
               ),
@@ -67,11 +74,10 @@ class AddContactForm extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.save),
         onPressed: (){
-          controller.addContact();
-          Modular.to.pushReplacementNamed('/');
+           if(_controllerPage.saveForm() == true)
+            Modular.to.pushReplacementNamed('/');         
         },
       ),
     );
   }
-  
 }
